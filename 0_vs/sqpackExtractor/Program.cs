@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace sqpackExtractor
 {
@@ -182,7 +183,26 @@ namespace sqpackExtractor
 
                 folderSegments.Add(filesSegment);
 
+                var context = new Model.hashlistContext();
+                var test = context.Folders.ToDictionary(row => row.Hash, row => row);
+                var filetest = context.Filenames.ToDictionary(row => row.Hash, row => row);
+
                 Dictionary<FolderSegment, List<FileSegment>> filesByFolder = folderSegments.ToDictionary(item => item, item => item.ReadFiles(b));
+
+                var result = filesByFolder.Keys.Where(segment => test.ContainsKey(segment.idHash)).Select(segment => UTF8Encoding.UTF8.GetString(test[segment.idHash].Path)).OrderBy(a=>a).ToList();
+                var fileResult = filesByFolder.Values.SelectMany(a=>a).Where(segment => filetest.ContainsKey(segment.idHash1)).Select(segment => UTF8Encoding.UTF8.GetString(filetest[segment.idHash1].Name)).OrderBy(a=>a).ToList();
+
+                Console.WriteLine("FOLDERS: ");
+                foreach(var folder in result)
+                {
+                    Console.WriteLine(folder);
+                }
+
+                Console.WriteLine("FILES: ");
+                foreach (var folder in fileResult)
+                {
+                    Console.WriteLine(folder);
+                }
             }
         }
     }
